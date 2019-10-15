@@ -4,7 +4,7 @@ import gurobipy as grb
 
 print("Loading a model")
 
-model = grb.read("/apps/software/vendor/grbrobi/8.0.1/examples/data/afiro.mps")
+model = grb.read("/apps/software/vendor/gurobi/8.0.1/examples/data/afiro.mps")
 
 model.optimize()
 

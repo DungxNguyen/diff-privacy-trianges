@@ -29,3 +29,21 @@ print("Edges: ", net.size())
 
 # 48260
 print("Triangles: ", total_triangles(net))
+
+
+def list_triangles(network):
+    list_of_triangles = []
+
+    for i in net.nodes():
+        for j in net.neighbors(i):
+            for k in net.neighbors(j):
+                if i < j and j < k and \
+                   net.has_edge(i, k):
+                    list_of_triangles.append([i, j, k])
+
+    return list_of_triangles
+
+
+print("Recount triangles: ", len(list_triangles(net)))
+
+print("10 triangles: ", list_triangles(net)[0:10])
