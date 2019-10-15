@@ -5,10 +5,8 @@ import gurobipy as grb
 
 network_path = "../data_graphs/ca-GrQc.txt"
 
-net = nx.read_edgelist(network_path, create_using=nx.Graph(), nodetype=int)
 
-
-def list_triangles(network):
+def list_triangles(net):
     list_of_triangles = []
 
     for i in net.nodes():
@@ -21,27 +19,49 @@ def list_triangles(network):
     return list_of_triangles
 
 
-triangles = list_triangles(net)
+def shiva_triange_count(net, D):
 
-# Linear Programming Model
-lpm = grb.Model()
+    triangles = list_triangles(net)
 
-D = 6000
+    # Linear Programming Model
+    lpm = grb.Model()
 
-num_triangles = len(triangles)
-print("Real count triangles: ", num_triangles)
+    num_triangles = len(triangles)
+    # print("Real count triangles: ", num_triangles)
 
-x = lpm.addVars(len(triangles), name="x_C")
+    x = lpm.addVars(len(triangles), name="x_C")
 
-lpm.addConstrs(x[i] >= 0 for i in range(num_triangles))
-lpm.addConstrs(x[i] <= 1 for i in range(num_triangles))
+    lpm.addConstrs(x[i] >= 0 for i in range(num_triangles))
+    lpm.addConstrs(x[i] <= 1 for i in range(num_triangles))
 
-for node in net.nodes():
-    lpm.addConstr(grb.quicksum(x[i]
-                  for i in range(num_triangles) if node in triangles[i]) <= D)
+    for node in net.nodes():
+        lpm.addConstr(grb.quicksum(x[i]
+                                   for i in range(num_triangles)
+                                   if node in triangles[i]) <= D)
+
+    lpm.setObjective(grb.quicksum(x[i] for i in range(num_triangles)),
+                     grb.GRB.MAXIMIZE)
+
+    return lpm
 
 
-lpm.setObjective(grb.quicksum(x[i] for i in range(num_triangles)),
-                 grb.GRB.MAXIMIZE)
+def total_triangles(G):
+    return sum(list(nx.triangles(G).values())) // 3
 
-lpm.optimize()
+
+def main():
+    net = nx.read_edgelist(network_path, create_using=nx.Graph(), nodetype=int)
+
+    # shiva algorithm with D = 50
+    lpm = shiva_triange_count(net, 50)
+
+    lpm.optimize()
+
+    # real count by networkx
+    print("Real count triangles: ", total_triangles(net))
+
+    print("Shiva alg count: ", lpm.ObjVal)
+
+
+if __name__ == "__main__":
+    main()
