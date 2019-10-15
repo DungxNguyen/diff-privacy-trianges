@@ -16,3 +16,16 @@ print(total_triangles(nx.complete_graph(4)))
 
 print(total_triangles(G))
 
+
+network_path = "../data_graphs/ca-GrQc.txt"
+
+net = nx.read_edgelist(network_path, create_using=nx.Graph(), nodetype=int)
+
+# 5242
+print("Nodes: ", net.order())
+
+# 14496
+print("Edges: ", net.size())
+
+# 48260
+print("Triangles: ", total_triangles(net))
