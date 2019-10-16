@@ -37,7 +37,7 @@ def shiva_triange_count(net, D):
     for node in net.nodes():
         lpm.addConstr(grb.quicksum(x[i]
                                    for i in range(num_triangles)
-                                   if node in triangles[i]) <= D)
+                                   if node in triangles[i]) <= D * (D - 1) / 2) # A node in a D-bounded graph can involve in at most 1/2D(D-1) triangles
 
     lpm.setObjective(grb.quicksum(x[i] for i in range(num_triangles)),
                      grb.GRB.MAXIMIZE)
