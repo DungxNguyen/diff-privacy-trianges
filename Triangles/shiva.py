@@ -2,6 +2,8 @@
 # Implement Shiva algorithm
 import networkx as nx
 import gurobipy as grb
+import numpy as np
+import math
 
 network_path = "../data_graphs/ca-GrQc.txt"
 
@@ -18,9 +20,7 @@ def list_triangles(net):
 
     return list_of_triangles
 
-
-def shiva_triange_count(net, D):
-
+def linear_program_solve(net, D):
     triangles = list_triangles(net)
 
     # Linear Programming Model
@@ -42,7 +42,28 @@ def shiva_triange_count(net, D):
     lpm.setObjective(grb.quicksum(x[i] for i in range(num_triangles)),
                      grb.GRB.MAXIMIZE)
 
-    return lpm
+    lpm.optimize()
+
+    return lpm.ObjVal
+
+
+def shiva_triange_count(net, D, epsilon):
+    real_triangle_count = total_triangles(net)
+
+    number_of_nodes = net.number_of_nodes()
+    # print("Nodes: ", number_of_nodes)
+
+    threshold = number_of_nodes ** 2 * math.log(number_of_nodes) / epsilon
+    # print("Threshold: ", threshold)
+
+    f1_hat = real_triangle_count + np.random.laplace(6 * number_of_nodes ** 2 / epsilon)
+
+    if f1_hat > 7 * threshold:
+        return f1_hat
+
+    f2_hat = linear_program_solve(net, D) + np.random.laplace(6 * D ** 2 / epsilon)
+
+    return f2_hat
 
 
 def total_triangles(G):
@@ -53,14 +74,12 @@ def main():
     net = nx.read_edgelist(network_path, create_using=nx.Graph(), nodetype=int)
 
     # shiva algorithm with D = 50
-    lpm = shiva_triange_count(net, 50)
-
-    lpm.optimize()
+    shiva_count = shiva_triange_count(net, 50, 1)
 
     # real count by networkx
     print("Real count triangles: ", total_triangles(net))
 
-    print("Shiva alg count: ", lpm.ObjVal)
+    print("Shiva alg count: ", shiva_count)
 
 
 if __name__ == "__main__":
