@@ -25,6 +25,7 @@ def linear_program_solve(net, D):
 
     # Linear Programming Model
     lpm = grb.Model()
+    lpm.Params.LogFile = "gurobi.log"
 
     num_triangles = len(triangles)
     # print("Real count triangles: ", num_triangles)
@@ -56,12 +57,16 @@ def shiva_triange_count(net, D, epsilon):
     threshold = number_of_nodes ** 2 * math.log(number_of_nodes) / epsilon
     # print("Threshold: ", threshold)
 
-    f1_hat = real_triangle_count + np.random.laplace(6 * number_of_nodes ** 2 / epsilon)
+    f1_hat = real_triangle_count + np.random.laplace(0, 6 * number_of_nodes ** 2 / epsilon)
 
     if f1_hat > 7 * threshold:
         return f1_hat
 
-    f2_hat = linear_program_solve(net, D) + np.random.laplace(6 * D ** 2 / epsilon)
+    lpm = linear_program_solve(net, D)
+    noise = np.random.laplace(0, 6 * D ** 2 / epsilon)
+    f2_hat = lpm + noise
+
+    print("Noise: ", noise)
 
     return f2_hat
 
