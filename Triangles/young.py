@@ -19,7 +19,7 @@ def triangle_count(net):
             for k in net.neighbors(j):
                 if i < j and j < k and \
                    net.has_edge(i, k):
-                    triangles[count] = (i, j, k)
+                    triangles[count] = [i, j, k]
                     if i not in nodes:
                         nodes[i] = []
                     if j not in nodes:
@@ -41,8 +41,44 @@ def sum_triangles_of_node(i, nodes, X):
 
     return sum_x
 
-def young_triangle_count(net, D, epsilon):
+
+def normP(nodes, X, N):
+    triangle_norm = np.sum(np.exp(X * N))
+
+    node_norm = 0
+    for node in nodes.keys():
+        node_norm += np.exp(2 * N / (D * (D - 1)) * sum_triangles_of_node(node, nodes, X))
+
+    return triangle_norm + node_norm
+
+def partialP(j, nodes, triangles, X, N, D):
+    triangle_sum = N * np.exp(N * X[j])
+
+    node_sum = 0
+
+    for node in triangles[j]:
+        node_sum += (2 * N / (D * (D -1 ))) * \
+            np.exp((2 * N / (D * (D -1 ))) * \
+                   sum_triangles_of_node(node, nodes, X))
+
+    return triangle_sum + node_sum
+
+
+def young_triangle_count(net, c, D, epsilon):
     (count, triangles, nodes) = triangle_count(net)
+    T = count
+    N = 2 * math.log(T + net.number_of_nodes() + 1)
+    alpha = epsilon / N
+    X = np.zeros(T)
+
+    while np.amin( N / c * X) < N:
+        for j in range(T):
+            ratio_j = partialP(j, nodes, triangles, X, N, D) / (N / c)
+            if ratio_j < 1 + epsilon:
+                break
+
+        # Add alpha j to X
+        X[j] += alpha
 
     print("Real Count: ", count)
     # print("Triangles: ", triangles.items())
