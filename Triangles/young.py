@@ -53,6 +53,7 @@ def normP(nodes, X, N, D):
 
     return triangle_norm + node_norm
 
+
 def partialP(j, nodes, triangles, X, N, D):
     triangle_sum = N * np.exp(N * X[j])
 
@@ -103,12 +104,25 @@ def young_triangle_count(net, c, D, epsilon):
         if (iter_count % 10 == 0):
             print("Iter ", iter_count, ": ", np.sum(X))
 
-    print("Real Count: ", count)
     # print("Triangles: ", triangles.items())
     # print("Nodes: ", nodes.items())
 
+    print("Young Validate: ", validate(net, X, c, D, epsilon))
+
     # TODO Fix the return value here
     return np.sum(X)
+
+
+def validate(net, X, c, D, epsilon):
+    (count, triangles, nodes) = triangle_count(net)
+    if np.amax(X) > 1 + epsilon:
+        return False
+    for node in net.nodes():
+        if sum_triangles_of_node(node, nodes, X) >= D * (D - 1) / 2 * (1 + epsilon):
+            return False
+
+    return True
+    
 
 
 def main():
@@ -127,7 +141,9 @@ def main():
     #net.add_edges_from([(1, 2), (1, 3), (2, 3)])
 
     young_count = young_triangle_count(net, count, d_bound, 2)
+    print("Real Count: ", count)
     print("Young count: ", young_count)
+
 
 
 if __name__ == "__main__":
