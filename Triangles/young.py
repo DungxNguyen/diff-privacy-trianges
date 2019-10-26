@@ -75,17 +75,25 @@ def young_triangle_count(net, c, D, epsilon):
     (count, triangles, nodes) = triangle_count(net)
     T = count
     N = (2 * math.log(T + net.number_of_nodes() + 1)) / epsilon
-    alpha = epsilon / N
+    alpha_j = epsilon / N
     X = np.zeros(T)
+    max_T = max(len(t) for t in nodes.values())
+
+    # Gurantee that max (P*alpha) < epsilon
+    # TODO
+    # Should guarantee C * alpha < epsilon also
+    if D * (D - 1) / (2 * max_T) < 1:
+        alpha_j *= (D * (D - 1) / (2 * max_T))
 
     print("N: ", N)
+    print("Max T: ", max_T)
 
     start = timeit.default_timer()
     iter_count = 0
-    node_table = {}
     while np.sum(X) < c:
-        j_select = -1
+        # j_select = -1
         infeasible = True
+        alpha = np.zeros(T)
 
         norm = normP(nodes, X, N, D)
         for j in range(T):
@@ -95,16 +103,17 @@ def young_triangle_count(net, c, D, epsilon):
             if infeasible and ratio_j <= 1:
                 infeasible = False
             if ratio_j <= 1 + epsilon:
-                j_select = j
-                if not infeasible:
-                    break
+                # j_select = j
+                # if not infeasible:
+                #     break
+                alpha[j] = alpha_j
 
         if infeasible:
             # print("X: ", X)
             return -1
         # Add alpha j to X
         iter_count += 1
-        X[j_select] += alpha
+        X += alpha
 
         # This function call is used to update the node_table
         # Not need yet
@@ -113,21 +122,19 @@ def young_triangle_count(net, c, D, epsilon):
         # print("j index: ", j_select)
         # print("X: ", X)
 
-        if (iter_count % 100 == 0):
+        if (iter_count % 1 == 0):
             print("Iter ", iter_count, ": ", np.sum(X))
 
     # print("Triangles: ", triangles.items())
     # print("Nodes: ", nodes.items())
 
     end = timeit.default_timer()
-
     duration = end - start
 
     # print("X: ", X)
     print("Young Validate: ", validate(net, X, c, D, epsilon))
     print("Young time: ", duration)
 
-    # TODO Fix the return value here
     return np.sum(X)
 
 
@@ -145,8 +152,8 @@ def validate(net, X, c, D, epsilon):
 def main():
     net = nx.read_edgelist(network_path, create_using=nx.Graph(), nodetype=int)
 
-    n_node = 50
-    edge_prob = 0.2
+    n_node = 5000
+    edge_prob = 0.0125
 
     net = nx.fast_gnp_random_graph(n_node, edge_prob)
     d_bound = max(val for (node, val) in net.degree())
