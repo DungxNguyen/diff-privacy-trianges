@@ -48,25 +48,36 @@ def sum_triangles_of_node(i, nodes, X):
     return sum_x
 
 
-def normP(nodes, X, N, D):
+def compute_triangles_of_node_table(nodes, X):
+    triangles_of_node_table = {}
+
+    for node in nodes.keys():
+        triangles_of_node_table[node] = sum_triangles_of_node(node, nodes, X)    
+
+    return triangles_of_node_table
+
+
+def normP(nodes, X, N, D, triangles_of_node_table):
     triangle_norm = np.sum(np.exp(X * N))
 
     node_norm = 0
     for node in nodes.keys():
-        node_norm += np.exp(2 * N / (D * (D - 1)) * sum_triangles_of_node(node, nodes, X))
+        # node_norm += np.exp(2 * N / (D * (D - 1)) * sum_triangles_of_node(node, nodes, X))
+        node_norm += np.exp(2 * N / (D * (D - 1)) * triangles_of_node_table[node])
 
     return triangle_norm + node_norm
 
 
-def partialP(j, nodes, triangles, X, N, D):
+def partialP(j, nodes, triangles, X, N, D, triangles_of_node_table):
     triangle_sum = N * np.exp(N * X[j])
 
     node_sum = 0
 
     for node in triangles[j]:
-        node_sum += (2 * N / (D * (D - 1))) * \
-                np.exp((2 * N / (D * (D - 1))) * \
-                       sum_triangles_of_node(node, nodes, X))
+         node_sum += (2 * N / (D * (D - 1))) * \
+                 np.exp((2 * N / (D * (D - 1))) * \
+                        triangles_of_node_table[node] )
+        #                sum_triangles_of_node(node, nodes, X))
 
     return (triangle_sum + node_sum)
 
@@ -95,10 +106,11 @@ def young_triangle_count(net, c, D, epsilon):
         infeasible = True
         alpha = np.zeros(T)
 
-        norm = normP(nodes, X, N, D)
+        triangles_of_node_table = compute_triangles_of_node_table(nodes, X) 
+        norm = normP(nodes, X, N, D, triangles_of_node_table)
         count_j = 0
         for j in range(T):
-            ratio_j = partialP(j, nodes, triangles, X, N, D) / norm / (N / c)
+            ratio_j = partialP(j, nodes, triangles, X, N, D, triangles_of_node_table) / norm / (N / c)
             # print("partial", j, ": ", partialP(j, nodes, triangles, X, N, D))
             # print("ratio", j, ": ", ratio_j)
             if infeasible and ratio_j <= 1:
