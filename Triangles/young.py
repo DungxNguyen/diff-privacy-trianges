@@ -1,5 +1,5 @@
 # Dung Nguyen
-# Implementation of young algorithm for counting triangles
+# Implementation of young algorithm for counting triangles in D-bounded graphs
 import networkx as nx
 import gurobipy as grb
 import numpy as np
@@ -96,6 +96,7 @@ def young_triangle_count(net, c, D, epsilon):
         alpha = np.zeros(T)
 
         norm = normP(nodes, X, N, D)
+        count_j = 0
         for j in range(T):
             ratio_j = partialP(j, nodes, triangles, X, N, D) / norm / (N / c)
             # print("partial", j, ": ", partialP(j, nodes, triangles, X, N, D))
@@ -107,6 +108,7 @@ def young_triangle_count(net, c, D, epsilon):
                 # if not infeasible:
                 #     break
                 alpha[j] = alpha_j
+                count_j += 1
 
         if infeasible:
             # print("X: ", X)
@@ -123,7 +125,7 @@ def young_triangle_count(net, c, D, epsilon):
         # print("X: ", X)
 
         if (iter_count % 1 == 0):
-            print("Iter ", iter_count, ": ", np.sum(X))
+            print("Iter ", iter_count, ": ", np.sum(X), " count j: ", count_j)
 
     # print("Triangles: ", triangles.items())
     # print("Nodes: ", nodes.items())
@@ -155,7 +157,7 @@ def main():
     n_node = 5000
     edge_prob = 0.0125
 
-    net = nx.fast_gnp_random_graph(n_node, edge_prob)
+    # net = nx.fast_gnp_random_graph(n_node, edge_prob)
     d_bound = max(val for (node, val) in net.degree())
 
     print("Nodes: ", net.number_of_nodes())
