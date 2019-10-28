@@ -84,17 +84,20 @@ def partialP(j, nodes, triangles, X, N, D, triangles_of_node_table):
 
 def young_triangle_count(net, c, D, epsilon):
     (count, triangles, nodes) = triangle_count(net)
-    T = count
+    T = count # number of triangles
     N = (2 * math.log(T + net.number_of_nodes() + 1)) / epsilon
     alpha_j = epsilon / N
     X = np.zeros(T)
-    max_T = max(len(t) for t in nodes.values())
+    max_T = max(len(t) for t in nodes.values()) # Max number of triangles a node has in the graph
 
     # Gurantee that max (P*alpha) < epsilon
     # TODO
     # Should guarantee C * alpha < epsilon also
+    # Now, C * alpha is not enforced
     if D * (D - 1) / (2 * max_T) < 1:
         alpha_j *= (D * (D - 1) / (2 * max_T))
+    if T > c:
+        alpha_j = min(alpha_j, epsilon / N * c / T)
 
     print("N: ", N)
     print("Max T: ", max_T)
@@ -102,45 +105,36 @@ def young_triangle_count(net, c, D, epsilon):
     start = timeit.default_timer()
     iter_count = 0
     while np.sum(X) < c:
-        # j_select = -1
         infeasible = True
         alpha = np.zeros(T)
 
         triangles_of_node_table = compute_triangles_of_node_table(nodes, X) 
         norm = normP(nodes, X, N, D, triangles_of_node_table)
         count_j = 0
+        min_ratio = 999999
         for j in range(T):
             ratio_j = partialP(j, nodes, triangles, X, N, D, triangles_of_node_table) / norm / (N / c)
-            # print("partial", j, ": ", partialP(j, nodes, triangles, X, N, D))
-            # print("ratio", j, ": ", ratio_j)
-            if infeasible and ratio_j <= 1:
+            if ratio_j < min_ratio:
+                min_ratio = ratio_j
+            # Because of the number of significant of digits, can not use absolute 1
+            if infeasible and ratio_j <= 1 + 1e-15:
                 infeasible = False
             if ratio_j <= 1 + epsilon:
-                # j_select = j
-                # if not infeasible:
-                #     break
                 alpha[j] = alpha_j
                 count_j += 1
 
         if infeasible:
             # print("X: ", X)
+            X += alpha
+            print("Young Validate: ", validate(net, X, c, D, epsilon))
             return -1
+
         # Add alpha j to X
         iter_count += 1
         X += alpha
 
-        # This function call is used to update the node_table
-        # Not need yet
-        # partialP(j, nodes, triangles, X, N, D, node_table)
-        # print("Iter: ", iter_count)
-        # print("j index: ", j_select)
-        # print("X: ", X)
-
         if (iter_count % 1 == 0):
-            print("Iter ", iter_count, ": ", np.sum(X), " count j: ", count_j)
-
-    # print("Triangles: ", triangles.items())
-    # print("Nodes: ", nodes.items())
+            print("Iter ", iter_count, ": ", np.sum(X), " count j: ", count_j, " min_ratio", min_ratio)
 
     end = timeit.default_timer()
     duration = end - start
@@ -166,10 +160,10 @@ def validate(net, X, c, D, epsilon):
 def main():
     net = nx.read_edgelist(network_path, create_using=nx.Graph(), nodetype=int)
 
-    n_node = 5000
-    edge_prob = 0.0125
+    n_node = 5500
+    edge_prob = 0.0120
 
-    # net = nx.fast_gnp_random_graph(n_node, edge_prob)
+    net = nx.fast_gnp_random_graph(n_node, edge_prob)
     d_bound = max(val for (node, val) in net.degree())
 
     print("Nodes: ", net.number_of_nodes())
@@ -177,10 +171,7 @@ def main():
     count, triangles, nodes = triangle_count(net)
     print("Triangles: ", count)
 
-    #net = nx.Graph()
-    #net.add_edges_from([(1, 2), (1, 3), (2, 3)])
-
-    young_count = young_triangle_count(net, count, d_bound, 1)
+    young_count = young_triangle_count(net, count, d_bound, 0.1)
     print("Real Count: ", count)
     print("Young count: ", young_count)
 
