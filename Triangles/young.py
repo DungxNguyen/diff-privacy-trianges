@@ -133,7 +133,7 @@ def young_triangle_count(net, c, D, epsilon):
         iter_count += 1
         X += alpha
 
-        if (iter_count % 1 == 0):
+        if (iter_count % 10 == 0):
             print("Iter ", iter_count, ": ", np.sum(X), " count j: ", count_j, " min_ratio", min_ratio)
 
     end = timeit.default_timer()
@@ -171,7 +171,7 @@ def main():
     count, triangles, nodes = triangle_count(net)
     print("Triangles: ", count)
 
-    young_count = young_triangle_count(net, count, d_bound, 0.1)
+    young_count = young_triangle_count(net, count, d_bound, 0.01)
     print("Real Count: ", count)
     print("Young count: ", young_count)
 

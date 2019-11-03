@@ -23,15 +23,15 @@ def list_triangles(net):
     return list_of_triangles
 
 
-def linear_program_solve(net, D, method="gurobi"):
+def linear_program_solve(net, D, p=1, method="gurobi"):
 
     if method == "gurobi":
-        return linear_program_solve_gurobi(net, D)
+        return linear_program_solve_gurobi(net, D, p)
 
-    return linear_program_solve_scipy(net, D)
+    return linear_program_solve_scipy(net, D, p)
 
 
-def linear_program_solve_scipy(net, D):
+def linear_program_solve_scipy(net, D, p=1):
 
     triangles = list_triangles(net)
 
@@ -62,7 +62,7 @@ def linear_program_solve_scipy(net, D):
     return -lp.fun
 
 
-def linear_program_solve_gurobi(net, D):
+def linear_program_solve_gurobi(net, D, p=1):
     triangles = list_triangles(net)
 
     # Linear Programming Model
@@ -80,7 +80,7 @@ def linear_program_solve_gurobi(net, D):
     for node in net.nodes():
         lpm.addConstr(grb.quicksum(x[i]
                                    for i in range(num_triangles)
-                                   if node in triangles[i]) <= D * (D - 1) / 2) # A node in a D-bounded graph can involve in at most 1/2D(D-1) triangles
+                                   if node in triangles[i]) <= p * D * (D * p - 1) / 2) # A node in a D-bounded graph can involve in at most 1/2D(D-1) triangles
 
     lpm.setObjective(grb.quicksum(x[i] for i in range(num_triangles)),
                      grb.GRB.MAXIMIZE)
@@ -90,7 +90,7 @@ def linear_program_solve_gurobi(net, D):
     return lpm.ObjVal
 
 
-def shiva_triange_count(net, D, epsilon, method="gurobi"):
+def shiva_differentially_private_triange_count(net, D, epsilon, method="gurobi"):
     real_triangle_count = total_triangles(net)
 
     number_of_nodes = net.number_of_nodes()
@@ -130,8 +130,7 @@ def main():
 
     d_bound = max(val for (node, val) in net.degree())
     # shiva algorithm with D = 50
-    shiva_count = shiva_triange_count(net, d_bound, 1, "scipy")
-
+    shiva_count = shiva_differentially_private_triange_count(net, d_bound, 1, "scipy")
 
     print("Shiva alg count: ", shiva_count)
 
