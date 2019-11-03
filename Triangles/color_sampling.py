@@ -8,6 +8,7 @@ import random
 import shiva
 import csv
 import sys
+from concurrent.futures import ProcessPoolExecutor
 
 network_path = ["../data_graphs/ca-GrQc.txt", #5000
                 "../data_graphs/ca-HepTh.txt", #10000
@@ -37,6 +38,7 @@ def shiva_color_sample(net, D, p):
 
 
 def run_experiments(net):
+    executor = ProcessPoolExecutor(max_workers=10)
     d_bound = max(val for (node, val) in net.degree())
     for d in range(5):
         D = d_bound / (2 ** d)
@@ -44,17 +46,14 @@ def run_experiments(net):
 
         for k in range(5):
             p = 1 / (2 ** (k + 1))
-            try:
-                experiment(net, D, p, original_lp)
-            except:
-                with open(network_path[int(sys.argv[1])] + ".csv", 'a') as csvfile:
-                    logwriter = csv.writer(csvfile, delimiter=',',
-                                           quotechar='|', quoting=csv.QUOTE_MINIMAL)
-                    logwriter.writerow([D, p, original_lp, -1, -1])
+            executor.submit(experiment, net, D, p, original_lp)
+
+    executor.shutdown(wait=True)
 
 
 def experiment(net, D, p, original_lp, repeat=None):
-    with open(network_path[int(sys.argv[1])] + ".csv", 'a') as csvfile:
+    print("****************************************", D, p, original_lp)
+    try:
         if repeat is None:
             repeat = int(round(2 * math.log2(net.number_of_nodes())))
 
@@ -66,10 +65,15 @@ def experiment(net, D, p, original_lp, repeat=None):
 
         sample_lp /= repeat
 
+        csvfile = open(network_path[int(sys.argv[1])] + ".csv", 'a')
         logwriter = csv.writer(csvfile, delimiter=',',
-                               quotechar='|', quoting=csv.QUOTE_MINIMAL)
+                           quotechar='|', quoting=csv.QUOTE_MINIMAL)
         logwriter.writerow([D, p, original_lp, sample_lp, original_lp / sample_lp])
-        print(D,  p, original_lp, sample_lp, original_lp / sample_lp)
+    except:
+        csvfile = open(network_path[int(sys.argv[1])] + ".csv", 'a')
+        logwriter = csv.writer(csvfile, delimiter=',',
+                           quotechar='|', quoting=csv.QUOTE_MINIMAL)
+        logwriter.writerow([D, p, original_lp, -1, -1])
 
     return (sample_lp, original_lp)
 
