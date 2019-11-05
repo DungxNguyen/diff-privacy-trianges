@@ -118,6 +118,14 @@ def total_triangles(G):
     return sum(list(nx.triangles(G).values())) // 3
 
 
+def average_degree(G):
+    return sum(val for (node, val) in G.degree()) / G.number_of_nodes()
+
+
+def max_degree(G):
+    return max(val for (node, val) in G.degree())
+
+
 def main():
     net = nx.read_edgelist(network_path, create_using=nx.Graph(), nodetype=int)
 
