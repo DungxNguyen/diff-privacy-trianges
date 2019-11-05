@@ -10,6 +10,31 @@ import timeit
 network_path = "../data_graphs/ca-GrQc.txt"
 
 
+def triangle_count(net):
+    triangles = {}
+    nodes = {}
+    count = 0
+
+    for i in net.nodes():
+        for j in net.neighbors(i):
+            for k in net.neighbors(j):
+                if i < j and j < k and \
+                   net.has_edge(i, k):
+                    triangles[count] = [i, j, k]
+                    if i not in nodes:
+                        nodes[i] = []
+                    if j not in nodes:
+                        nodes[j] = []
+                    if k not in nodes:
+                        nodes[k] = []
+                    nodes[i].append(count)
+                    nodes[j].append(count)
+                    nodes[k].append(count)
+                    count += 1
+
+    return (count, triangles, nodes)
+
+
 def list_triangles(net):
     list_of_triangles = []
 
@@ -63,24 +88,27 @@ def linear_program_solve_scipy(net, D, p=1):
 
 
 def linear_program_solve_gurobi(net, D, p=1):
-    triangles = list_triangles(net)
+    num_triangles, triangles, nodes = triangle_count(net)
 
     # Linear Programming Model
     lpm = grb.Model()
     lpm.Params.LogFile = "gurobi.log"
 
-    num_triangles = len(triangles)
-    # print("Real count triangles: ", num_triangles)
-
-    x = lpm.addVars(len(triangles), name="x_C")
+    x = lpm.addVars(num_triangles, name="x_C")
 
     lpm.addConstrs(x[i] >= 0 for i in range(num_triangles))
     lpm.addConstrs(x[i] <= 1 for i in range(num_triangles))
 
-    for node in net.nodes():
+    # # TODO
+    # # May rewrite this part for faster execution
+    # for node in net.nodes():
+    #     lpm.addConstr(grb.quicksum(x[i]
+    #                                for i in range(num_triangles)
+    #                                if node in triangles[i]) <= p * D * (D - 1) / 2) # A node in a D-bounded graph can involve in at most 1/2D(D-1) triangles
+
+    for node in nodes.keys():
         lpm.addConstr(grb.quicksum(x[i]
-                                   for i in range(num_triangles)
-                                   if node in triangles[i]) <= p * D * (D - 1) / 2) # A node in a D-bounded graph can involve in at most 1/2D(D-1) triangles
+                                   for i in nodes[node]) <= p * D * (D - 1) / 2) # A node in a D-bounded graph can involve in at most 1/2D(D-1) triangles
 
     lpm.setObjective(grb.quicksum(x[i] for i in range(num_triangles)),
                      grb.GRB.MAXIMIZE)

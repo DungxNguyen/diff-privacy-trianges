@@ -40,7 +40,7 @@ def shiva_color_sample(net, D, p):
 
 # TODO: Fix run experiment
 def run_experiments(net):
-    csvfile = open(network_path[int(sys.argv[1])] + ".csv", 'a')
+    csvfile = open(network_path[int(sys.argv[1])] + ".csv.temp", 'a')
     logwriter = csv.writer(csvfile, delimiter=',',
                        quotechar='|', quoting=csv.QUOTE_MINIMAL)
 
@@ -61,7 +61,7 @@ def run_experiments(net):
 
         for k in range(5):
             p = 1 / (2 ** (k + 1))
-            sample_lps[d][k] = executor.submit(experiment, net, D, p)
+            sample_lps[d][k] = experiment(executor, net, D, p)
 
     for d in range(5):
         D = d_bound / (2 ** d)
@@ -86,7 +86,7 @@ def run_experiments(net):
 
 
 def run_experiments_average_degree(net):
-    csvfile = open(network_path[int(sys.argv[1])] + ".csv", 'a')
+    csvfile = open(network_path[int(sys.argv[1])] + ".2.csv", 'a')
     logwriter = csv.writer(csvfile, delimiter=',',
                        quotechar='|', quoting=csv.QUOTE_MINIMAL)
 
