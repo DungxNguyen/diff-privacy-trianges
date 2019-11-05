@@ -40,24 +40,47 @@ def shiva_color_sample(net, D, p):
 
 # TODO: Fix run experiment
 def run_experiments(net):
-    original_executor = ProcessPoolExecutor(max_workers=10)
-    executor = ProcessPoolExecutor(max_workers=20)
+    csvfile = open(network_path[int(sys.argv[1])] + ".csv", 'a')
+    logwriter = csv.writer(csvfile, delimiter=',',
+                       quotechar='|', quoting=csv.QUOTE_MINIMAL)
+
+    executor = ProcessPoolExecutor(max_workers=32)
 
     d_bound = shiva.max_degree(net)
-    original_lps = []
+    max_degree = shiva.max_degree(net)
+    total_triangles = shiva.total_triangles(net)
+
+    original_lps = [None] * 5
     for d in range(5):
         D = d_bound / (2 ** d)
-        original_lps.append(original_executor.submit(shiva.linear_program_solve, net, D))
+        original_lps[d] = executor.submit(shiva.linear_program_solve, net, D)
 
-    original_executor.shutdown(wait=True)
-
+    sample_lps = [[None] * 5] * 5
     for d in range(5):
-        original_lp = original_lps[d].result()
         D = d_bound / (2 ** d)
 
         for k in range(5):
             p = 1 / (2 ** (k + 1))
-            executor.submit(experiment, net, D, p, original_lp)
+            sample_lps[d][k] = executor.submit(experiment, net, D, p)
+
+    for d in range(5):
+        D = d_bound / (2 ** d)
+
+        for k in range(5):
+            p = 1 / (2 ** (k + 1))
+            if sample_lps[d][k] == -1:
+                sample_lp = -1
+            else:
+                sample_lp = sum(x.result() for x in sample_lps[d][k]) \
+                    / len(sample_lps[d][k])
+            logwriter.writerow([
+                                max_degree,
+                                total_triangles,
+                                D, p,
+                                original_lps[d].result(),
+                                sample_lp,
+                                original_lps[d].result() / sample_lp,
+            ])
 
     executor.shutdown(wait=True)
 
