@@ -38,11 +38,20 @@ def shiva_color_sample(net, D, p):
 
 
 def run_experiments(net):
-    executor = ProcessPoolExecutor(max_workers=10)
+    original_executor = ProcessPoolExecutor(max_workers=10)
+    executor = ProcessPoolExecutor(max_workers=20)
+
     d_bound = max(val for (node, val) in net.degree())
+    original_lps = []
     for d in range(5):
         D = d_bound / (2 ** d)
-        original_lp = shiva.linear_program_solve(net, D)
+        original_lps.append(original_executor.submit(shiva.linear_program_solve, net, D))
+
+    original_executor.shutdown(wait=True)
+
+    for d in range(5):
+        original_lp = original_lps[d].result()
+        D = d_bound / (2 ** d)
 
         for k in range(5):
             p = 1 / (2 ** (k + 1))
