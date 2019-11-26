@@ -48,15 +48,15 @@ def list_triangles(net):
     return list_of_triangles
 
 
-def linear_program_solve(net, D, p=1, method="gurobi"):
+def linear_program_solve(net, D, p=1, c=1, method="gurobi"):
 
     if method == "gurobi":
-        return linear_program_solve_gurobi(net, D, p)
+        return linear_program_solve_gurobi(net, D, p, c)
 
-    return linear_program_solve_scipy(net, D, p)
+    return linear_program_solve_scipy(net, D, p, c)
 
 
-def linear_program_solve_scipy(net, D, p=1):
+def linear_program_solve_scipy(net, D, p=1, c=1):
 
     triangles = list_triangles(net)
 
@@ -87,12 +87,14 @@ def linear_program_solve_scipy(net, D, p=1):
     return -lp.fun
 
 
-def linear_program_solve_gurobi(net, D, p=1):
+def linear_program_solve_gurobi(net, D, p=1, c=1):
     num_triangles, triangles, nodes = triangle_count(net)
 
     # Linear Programming Model
     lpm = grb.Model()
     lpm.Params.LogFile = "gurobi.log"
+    lpm.Params.LogToConsole = 0
+    lpm.Params.Threads = 32
 
     x = lpm.addVars(num_triangles, name="x_C")
 
@@ -108,7 +110,7 @@ def linear_program_solve_gurobi(net, D, p=1):
 
     for node in nodes.keys():
         lpm.addConstr(grb.quicksum(x[i]
-                                   for i in nodes[node]) <= p * D * (D - 1) / 2) # A node in a D-bounded graph can involve in at most 1/2D(D-1) triangles
+                                   for i in nodes[node]) <= p * p * D * (D - 1) / 2 + c * math.log(net.number_of_nodes())) # A node in a D-bounded graph can involve in at most 1/2D(D-1) triangles
 
     lpm.setObjective(grb.quicksum(x[i] for i in range(num_triangles)),
                      grb.GRB.MAXIMIZE)

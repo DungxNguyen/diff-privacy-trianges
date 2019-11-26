@@ -35,12 +35,15 @@ def color_sample(net, p):
 
 def shiva_color_sample(net, D, p):
     print("****************************************", D, p)
-    return shiva.linear_program_solve(color_sample(net, p), D, p) / p ** 2
+
+    sampled_net = color_sample(net, p)
+    return (shiva.linear_program_solve(sampled_net, D, p) / p ** 2,
+            shiva.total_triangles(sampled_net))
 
 
 # TODO: Fix run experiment
 def run_experiments(net):
-    csvfile = open(network_path[int(sys.argv[1])] + ".csv.temp", 'a')
+    csvfile = open(network_path[int(sys.argv[1])] + ".csv", 'a')
     logwriter = csv.writer(csvfile, delimiter=',',
                        quotechar='|', quoting=csv.QUOTE_MINIMAL)
 
@@ -85,38 +88,75 @@ def run_experiments(net):
     executor.shutdown(wait=True)
 
 
-def run_experiments_average_degree(net):
-    csvfile = open(network_path[int(sys.argv[1])] + ".2.csv", 'a')
+def run_experiments_average_degree(net, c):
+    csvfile = open(network_path[int(sys.argv[1])] + ".c.csv", 'a')
     logwriter = csv.writer(csvfile, delimiter=',',
                        quotechar='|', quoting=csv.QUOTE_MINIMAL)
 
     executor = ProcessPoolExecutor(max_workers=32)
 
-    D = shiva.average_degree(net) * 1.1
+    average_degree = shiva.average_degree(net)
     max_degree = shiva.max_degree(net)
     total_triangles = shiva.total_triangles(net)
 
-    original_lp = executor.submit(shiva.linear_program_solve, net, D)
+    multipliers = [1.0, 1.5, 2.0]
 
-    sample_lps = [None] * 5
-    for k in range(5):
-        p = 1 / (2 ** (k + 1))
-        sample_lps[k] = experiment(executor, net, D, p)
+    original_lps = []
+    for d in range(len(multipliers)):
+        D = multipliers[d] * average_degree
+        original_lps.append(executor.submit(shiva.linear_program_solve, net, D, c))
 
-    for k in range(5):
-        p = 1 / (2 ** (k + 1))
-        if sample_lps[k] == -1:
-            sample_lp = -1
-        else:
-            sample_lp = sum(x.result() for x in sample_lps[k]) / len(sample_lps[k])
-        logwriter.writerow([
-                            max_degree,
-                            total_triangles,
-                            D, p,
-                            original_lp.result(),
-                            sample_lp,
-                            original_lp.result() / sample_lp,
-        ])
+    sample_lps = {}
+
+    for d in range(len(multipliers)):
+        D = multipliers[d] * average_degree
+
+        for k in range(5):
+            p = 1 / (2 ** (k + 1))
+
+            sample_lps[(d, k)] = experiment(executor, net, D, p)
+
+            # if k == 0:
+            #     print("Now", d, k, sample_lps[(d, k)][0])
+
+    # for d in range(len(multipliers)):
+    #     D = multipliers[d] * average_degree
+
+    #     for k in range(5):
+    #         p = 1 / (2 ** (k + 1))
+
+    #         if k == 0:
+    #             print("NowNow", d, k, sample_lps[(d, k)][0])
+
+    for d in range(len(multipliers)):
+        D = multipliers[d] * average_degree
+
+        for k in range(5):
+            p = 1 / (2 ** (k + 1))
+
+            if sample_lps[(d, k)] == -1:
+                sample_lp = -1
+                sample_triangles = -1
+            else:
+                sample_lp = sum(x.result()[0] for x in sample_lps[(d, k)]) / len(sample_lps[(d, k)])
+                sample_triangles = sum(x.result()[1] for x in sample_lps[(d, k)]) / len(sample_lps[(d, k)])
+
+            # temp = [x.result()[0] for x in sample_lps[(d, k)]] 
+
+            # if k == 0:
+            #     print("NotNow", d, k, sample_lps[(d, k)][0])
+            #     print("Out", d, k, temp) 
+
+            logwriter.writerow([
+                                max_degree,
+                                total_triangles,
+                                D, p,
+                                original_lps[d].result(),
+                                sample_lp,
+                                original_lps[d].result() / sample_lp,
+                                sample_triangles,
+                                c
+            ])
 
     executor.shutdown(wait=True)
 
@@ -171,7 +211,9 @@ def main():
     # print("Sampled Triangles: ", shiva.total_triangles(sampled_net))
     # print("Estimated Triangles: ", shiva.total_triangles(sampled_net) / p ** 2)
     # print("Estimated Shiva LP Triangles: ", shiva_color_sample(net, d_bound, p))
-    run_experiments_average_degree(net)
+
+    for c in [0, 1, 2, 4, 8, 16, 32]:
+        run_experiments_average_degree(net, c)
 
 
 if __name__ == "__main__":
