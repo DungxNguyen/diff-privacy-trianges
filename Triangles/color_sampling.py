@@ -33,11 +33,11 @@ def color_sample(net, p):
     return sampled_net
 
 
-def shiva_color_sample(net, D, p):
+def shiva_color_sample(net, D, p, c):
     print("****************************************", D, p)
 
     sampled_net = color_sample(net, p)
-    return (shiva.linear_program_solve(sampled_net, D, p) / p ** 2,
+    return (shiva.linear_program_solve(sampled_net, D, p, c) / p ** 2,
             shiva.total_triangles(sampled_net))
 
 
@@ -104,7 +104,7 @@ def run_experiments_average_degree(net, c):
     original_lps = []
     for d in range(len(multipliers)):
         D = multipliers[d] * average_degree
-        original_lps.append(executor.submit(shiva.linear_program_solve, net, D, c))
+        original_lps.append(executor.submit(shiva.linear_program_solve, net, D))
 
     sample_lps = {}
 
@@ -114,7 +114,7 @@ def run_experiments_average_degree(net, c):
         for k in range(5):
             p = 1 / (2 ** (k + 1))
 
-            sample_lps[(d, k)] = experiment(executor, net, D, p)
+            sample_lps[(d, k)] = experiment(executor, net, D, p, c)
 
             # if k == 0:
             #     print("Now", d, k, sample_lps[(d, k)][0])
@@ -161,7 +161,7 @@ def run_experiments_average_degree(net, c):
     executor.shutdown(wait=True)
 
 
-def experiment(executor, net, D, p, repeat=None):
+def experiment(executor, net, D, p, c, repeat=None):
     try:
         if repeat is None:
             repeat = int(round(2 * math.log2(net.number_of_nodes())))
@@ -170,7 +170,7 @@ def experiment(executor, net, D, p, repeat=None):
 
         sample_future = []
         for i in range(repeat):
-            sample_future.append(executor.submit(shiva_color_sample, net, D, p))
+            sample_future.append(executor.submit(shiva_color_sample, net, D, p, c))
 
         # # All process will join here
         # sample_lp = sum(x.result() for x in sample_future) / repeat
@@ -189,6 +189,48 @@ def experiment(executor, net, D, p, repeat=None):
         e = sys.exc_info()[0]
         print("<p>Error: %s</p>" % e)
         return -1
+
+
+def triangle_dist(net, filename):
+    
+    list_of_triangles = []
+    triangles_per_node = {}
+
+    for i in net.nodes():
+        for j in net.neighbors(i):
+            for k in net.neighbors(j):
+                if i < j and j < k and \
+                   net.has_edge(i, k):
+                    list_of_triangles.append([i, j, k])
+                    if i in triangles_per_node.keys():
+                        triangles_per_node[i] += 1
+                    else:
+                        triangles_per_node[i] = 1
+                    if j in triangles_per_node.keys():
+                        triangles_per_node[j] += 1
+                    else:
+                        triangles_per_node[j] = 1
+                    if k in triangles_per_node.keys():
+                        triangles_per_node[k] += 1
+                    else:
+                        triangles_per_node[k] = 1
+
+    try:
+        csvfile = open(network_path[int(sys.argv[1])] + filename + ".csv", 'a')
+        logwriter = csv.writer(csvfile, delimiter=',',
+                               quotechar='|', quoting=csv.QUOTE_MINIMAL)
+        print(filename)
+        print(len(triangles_per_node))
+        for node, triangle_count in triangles_per_node.items():
+            logwriter.writerow([node, triangle_count])
+
+    except:
+        # csvfile = open(network_path[int(sys.argv[1])] + ".csv", 'a')
+        # logwriter = csv.writer(csvfile, delimiter=',',
+        #                    quotechar='|', quoting=csv.QUOTE_MINIMAL)
+        # logwriter.writerow([D, p, original_lp, -1, -1, shiva.max_degree(net)])
+        e = sys.exc_info()[0]
+        print("<p>Error: %s</p>" % e)
 
 
 def main():
@@ -212,8 +254,13 @@ def main():
     # print("Estimated Triangles: ", shiva.total_triangles(sampled_net) / p ** 2)
     # print("Estimated Shiva LP Triangles: ", shiva_color_sample(net, d_bound, p))
 
-    for c in [0, 1, 2, 4, 8, 16, 32]:
-        run_experiments_average_degree(net, c)
+    # # Run experiment
+    # for c in [0, 1, 2, 4, 8, 16, 32]:
+    #     run_experiments_average_degree(net, c)
+
+    for c in [1, 2, 4, 8, 16, 32]:
+        print(1/c)
+        triangle_dist(color_sample(net, 1/c), ".distribution." + str(c))
 
 
 if __name__ == "__main__":
