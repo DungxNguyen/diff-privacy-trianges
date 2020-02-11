@@ -39,6 +39,7 @@ def renumber_node_ids(net):
     print("Renumber nodes:", count)
 
     new_net = nx.Graph()
+    new_net.add_nodes([i for i in range(count)])
     for (u, v) in net.edges():
         new_net.add_edge(node_map[u], node_map[v])
         
