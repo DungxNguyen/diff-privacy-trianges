@@ -132,8 +132,8 @@ def main():
                                         "blocki_edge_100",
                                         "k_core",
                                         net_name,
-                                        epsilon,
-                                        delta,
+                                        0.5,
+                                        0.5,
                                         k,
                                         jaccard(true_k_core[(net_name, k)], blocki_edge_100_k_core)
                 ])
@@ -145,8 +145,8 @@ def main():
                                         "blocki_edge_1000",
                                         "k_core",
                                         net_name,
-                                        epsilon,
-                                        delta,
+                                        0.5,
+                                        0.5,
                                         k,
                                         jaccard(true_k_core[(net_name, k)], blocki_edge_1000_k_core)
                 ])
@@ -158,8 +158,8 @@ def main():
                                         "ding_26",
                                         "k_core",
                                         net_name,
-                                        epsilon,
-                                        delta,
+                                        0.5,
+                                        0.5,
                                         k,
                                         jaccard(true_k_core[(net_name, k)], ding_26_k_core)
                 ])
