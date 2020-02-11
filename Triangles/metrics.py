@@ -58,16 +58,16 @@ def main():
         net.remove_edges_from(nx.selfloop_edges(net))
         for k in [16, 8, 4]:
             true_k_core[(net_name, k)] = nx_core.k_core(net, k)
-            result_writer.writerow([time.time(),
-                                    "node_privacy",
-                                    "true",
-                                    "k_core",
-                                    net_name,
-                                    0.5,
-                                    0.5,
-                                    k,  # reserve for index
-                                    true_k_core
-            ])
+            # result_writer.writerow([time.time(),
+            #                         "node_privacy",
+            #                         "true",
+            #                         "k_core",
+            #                         net_name,
+            #                         0.5,
+            #                         0.5,
+            #                         k,  # reserve for index
+            #                         true_k_core
+            # ])
 
     for i in range(int(sys.argv[1])):
         print("Repeat:", i)
