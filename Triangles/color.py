@@ -1,4 +1,3 @@
-
 # Dung Nguyen
 # Implement color sampling algorithm
 import networkx as nx
@@ -23,6 +22,12 @@ def color_sample(net, p):
         if net.nodes[u]['color'] == net.nodes[v]['color']:
             sampled_net.add_edge(u, v)
 
+    return sampled_net
+
+
+def private_color_sample(net, epsilon, delta):
+    p = min(1.0, delta)
+    sampled_net = color_sample(net, p)
     return sampled_net
 
 

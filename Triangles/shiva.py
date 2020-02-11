@@ -1,14 +1,18 @@
 # Dung Nguyen
-# Implement Shiva algorithm
+# Implement color sampling algorithm
 import networkx as nx
 import gurobipy as grb
 import numpy as np
-import scipy.optimize as opt
 import math
-import timeit
+import random
+import shiva
+import csv
+import sys
+from concurrent.futures import ProcessPoolExecutor
+import basic_edge
+import color
 import common
-
-network_path = "../data_graphs/ca-GrQc.txt"
+import time
 
 
 def linear_program_solve(net, D, p=1, c=0, method="gurobi"):
@@ -87,10 +91,10 @@ def shiva_differentially_private_triange_count(net, D, epsilon, method="gurobi",
     real_triangle_count = total_triangles(net)
 
     number_of_nodes = net.number_of_nodes()
-    print("Nodes: ", number_of_nodes)
+    # print("Nodes: ", number_of_nodes)
 
     threshold = number_of_nodes ** 2 * math.log(number_of_nodes) / epsilon
-    print("Threshold: ", threshold)
+    # print("Threshold: ", threshold)
 
     f1_hat = real_triangle_count + np.random.laplace(0, number_of_nodes ** 2 / epsilon, reps)
 
@@ -98,14 +102,14 @@ def shiva_differentially_private_triange_count(net, D, epsilon, method="gurobi",
     #     return f1_hat
 
     lpm = linear_program_solve(net, D, method)
-    print("LP Count: ", lpm)
+    # print("LP Count: ", lpm)
     noise = np.random.laplace(0, D ** 2 / epsilon, reps)
     f2_hat = lpm + noise
 
-    print("F1_hat:", f1_hat)
-    print("Noise: ", noise)
+    # print("F1_hat:", f1_hat)
+    # print("Noise: ", noise)
 
-    print("raw:", f1_hat <= 2 * threshold)
+    # print("raw:", f1_hat <= 2 * threshold)
 
     f_hat = f1_hat * (f1_hat >= 2 * threshold) + (f1_hat < 2 * threshold) * f2_hat
 
@@ -123,25 +127,60 @@ def average_degree(G):
 def max_degree(G):
     return max(val for (node, val) in G.degree())
 
+network_path = "../data_graphs/"
+
+network_name = ["ca-GrQc", #5000
+                "ca-HepTh", #10000
+                "ca-HepPh", #12000
+                "ca-AstroPh", #19000
+                "ca-CondMat", #23133
+                "email-Enron", #36000
+                "loc-gowalla_edges", #200000
+                ]
+
+result_file = "shiva_node_private.csv"
+
 
 def main():
-    net = nx.read_edgelist(network_path, create_using=nx.Graph(), nodetype=int)
+    csvfile = open(result_file, 'a')
+    result_writer = csv.writer(csvfile, delimiter=',',
+                       quotechar='|', quoting=csv.QUOTE_MINIMAL)
 
-    # n_node = 5000
-    # edge_prob = 0.0125
-
-    # net = nx.fast_gnp_random_graph(n_node, edge_prob)
-    # real count by networkx
-    print("Real count triangles: ", total_triangles(net))
-
-    d_bound = max(val for (node, val) in net.degree())
-    # shiva algorithm with D = 50
-    shiva_count = shiva_differentially_private_triange_count(net, d_bound, 1, "gurobi")
-
-    print("D:", d_bound)
-    print("Shiva alg count: ", shiva_count)
-    print("Mean Shiva alg count: ", np.mean(shiva_count))
-
+    for net_name in network_name:
+        print("Net:", net_name)
+        net = nx.read_edgelist(network_path + net_name + ".txt",
+                       create_using=nx.Graph(),
+                       nodetype=int)
+ 
+        true_triangle_count = common.triangle_count(net)[0]
+ 
+        #print("True count:", true_triangle_count)
+        for epsilon in [0.001, 0.005, 0.01, 0.05, 0.1, 0.5, 1]:
+            delta = epsilon
+            #print("Epsilon/Delta:", epsilon, delta)
+            shiva_100_triangle = shiva_differentially_private_triange_count(net, 100, epsilon, method="gurobi", reps=int(sys.argv[1]))
+            for sample in np.nditer(shiva_100_triangle):
+                result_writer.writerow([time.time(),
+                                        "node_privacy",
+                                        "shiva_node_100",
+                                        net_name,
+                                        true_triangle_count,
+                                        sample,
+                                        epsilon,
+                                        delta])
+ 
+            shiva_1000_triangle = shiva_differentially_private_triange_count(net, 1000, epsilon, method="gurobi", reps=int(sys.argv[1]))
+            for sample in np.nditer(shiva_1000_triangle):
+                result_writer.writerow([time.time(),
+                                        "node_privacy",
+                                        "shiva_node_1000",
+                                        net_name,
+                                        true_triangle_count,
+                                        sample,
+                                        epsilon,
+                                        delta])
+            csvfile.flush()
 
 if __name__ == "__main__":
     main()
+

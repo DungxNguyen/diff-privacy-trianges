@@ -35,6 +35,31 @@ def triangle_count(net):
     return (count, triangles, nodes)
 
 
+def triangle_count_ding(net):
+    triangles = {}
+    nodes = {}
+    count = 0
+
+    for i in net.nodes():
+        for j in net.neighbors(i):
+            for k in net.neighbors(j):
+                if i < j and j < k and \
+                   net.has_edge(i, k):
+                    triangles[count] = [i, j, k]
+                    if i not in nodes:
+                        nodes[i] = set()
+                    if j not in nodes:
+                        nodes[j] = set()
+                    if k not in nodes:
+                        nodes[k] = set()
+                    nodes[i].add((j, k))
+                    nodes[j].add((i, k))
+                    nodes[k].add((i, j))
+                    count += 1
+
+    return (count, triangles, nodes)
+
+
 def list_triangles(net):
     list_of_triangles = []
 

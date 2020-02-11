@@ -15,6 +15,20 @@ import common
 import time
 
 
+network_path = "../data_graphs/"
+
+network_name = ["ca-GrQc", #5000
+                "ca-HepTh", #10000
+                "ca-HepPh", #12000
+                "ca-AstroPh", #19000
+                "ca-CondMat", #23133
+                "email-Enron", #36000
+                "loc-gowalla_edges", #200000
+                ]
+
+result_file = "basic_node_private.csv"
+
+
 def basic_node_sample(net, p):
     if (p <= 0 and p > 1):
         return net  # Should raise exception
@@ -30,24 +44,16 @@ def basic_node_sample(net, p):
     return sampled_net
 
 
+def private_basic_node_sample(net, epsilon, delta):
+    p = min(1 - math.exp(-epsilon), delta, 1.0)
+    sampled_net = basic_node_sample(net, p)
+    return sampled_net
+
+
 def private_basic_node_triangle_count(net, epsilon, delta):
     p = min(1 - math.exp(-epsilon), delta, 1.0)
     sampled_net = basic_node_sample(net, p)
     return common.triangle_count(sampled_net)[0] / (p ** 3)
-
-
-network_path = "../data_graphs/"
-
-network_name = ["ca-GrQc", #5000
-                "ca-HepTh", #10000
-                "ca-HepPh", #12000
-                "ca-AstroPh", #19000
-                "ca-CondMat", #23133
-                "email-Enron", #36000
-                "loc-gowalla_edges", #200000
-                ]
-
-result_file = "basic_node_private.csv"
 
 
 def main():
@@ -83,6 +89,7 @@ def main():
                                         delta])
 
                 csvfile.flush()
+
 
 if __name__ == "__main__":
     main()

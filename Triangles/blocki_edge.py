@@ -29,8 +29,8 @@ def private_edge_blocki_triangle_count(net, epsilon, k, reps):
     trim_net = blocki_edge_trim(net, k)
     triangle_count = common.triangle_count(trim_net)[0]
     # print(triangle_count)
-    return np.random.laplace(0, 9 * (k ** 2) / epsilon, reps) + triangle_count
-
+    # return np.random.laplace(0, 9 * (k ** 2) / epsilon, reps) + triangle_count
+    return np.random.laplace(0, 3/2 * (k ** 2) / epsilon, reps) + triangle_count
 
 
 network_path = "../data_graphs/"

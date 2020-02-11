@@ -25,6 +25,12 @@ def basic_edge_sample(net, p):
     return sampled_net
 
 
+def private_basic_edge_sample(net, epsilon, delta):
+    p = min(1 - math.exp(-epsilon), delta, 1.0)
+    sampled_net = basic_edge_sample(net, p)
+    return sampled_net
+
+
 def private_basic_edge_triange_count(net, epsilon, delta):
     p = min(1 - math.exp(-epsilon), delta, 1.0)
     sampled_net = basic_edge_sample(net, p)
