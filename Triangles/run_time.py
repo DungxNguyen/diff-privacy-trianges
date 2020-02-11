@@ -138,7 +138,7 @@ def main():
 
             print("blocki node")
             start = timeit.default_timer()
-            blocki_node.blocki_node_triangle_count(net, epsilon, 100, 1)
+            blocki_node.blocki_node_triange_count(net, epsilon, 100, 1)
             end = timeit.default_timer()
             blocki_node_100_runtime = end - start
 
