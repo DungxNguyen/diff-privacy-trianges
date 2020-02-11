@@ -39,7 +39,7 @@ def renumber_node_ids(net):
     print("Renumber nodes:", count)
 
     new_net = nx.Graph()
-    new_net.add_nodes([i for i in range(count)])
+    # new_net.add_nodes([i for i in range(count)])
     for (u, v) in net.edges():
         new_net.add_edge(node_map[u], node_map[v])
         
@@ -60,8 +60,8 @@ def S_beta(beta, d_hat, k, c=4):
     return math.exp(beta / c * d_hat) * g_c(c, beta / c) * (k ** 2) / 2
 
 
-def blocki_node_triange_count(net, epsilon, k, reps):
-    net = renumber_node_ids(net)
+def blocki_node_triange_count(net0, epsilon, k, reps):
+    net = renumber_node_ids(net0)
 
     num_nodes = nx.number_of_nodes(net)
     num_edges = nx.number_of_edges(net)
