@@ -113,7 +113,7 @@ def main():
                 ])
 
                 start = timeit.default_timer()
-                color.private_color_triangle_count(net, epsilon, delta)
+                color.private_color_triange_count(net, epsilon, delta)
                 end = timeit.default_timer()
                 runtime = end - start
 
