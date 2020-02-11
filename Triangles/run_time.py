@@ -47,7 +47,7 @@ def main():
         net = nx.read_edgelist(network_path + net_name + ".txt",
                                create_using=nx.Graph(),
                                nodetype=int)
-        net.remove_edges_from(nx.selfloop_edges(net))
+        # net.remove_edges_from(nx.selfloop_edges(net))
 
     for i in range(int(sys.argv[1])):
         print("Repeat:", i)

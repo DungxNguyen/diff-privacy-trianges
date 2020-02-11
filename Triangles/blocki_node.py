@@ -156,10 +156,10 @@ def main():
         #print("True count:", true_triangle_count)
         epsilon = [0.001, 0.005, 0.01, 0.05, 0.1, 0.5, 1.0] 
         #print("Epsilon/Delta:", epsilon, delta)
-        shiva_100_triangle = blocki_node_triange_count(net, epsilon, 100, reps=int(sys.argv[1]))
-        shiva_1000_triangle = blocki_node_triange_count(net, epsilon, 1000, reps=int(sys.argv[1]))
+        blocki_100_triangle = blocki_node_triange_count(net, epsilon, 100, reps=int(sys.argv[1]))
+        blocki_1000_triangle = blocki_node_triange_count(net, epsilon, 1000, reps=int(sys.argv[1]))
         for eps in epsilon:
-            for sample in np.nditer(shiva_100_triangle[eps]):
+            for sample in np.nditer(blocki_100_triangle[eps]):
                 result_writer.writerow([time.time(),
                                         "node_privacy",
                                         "blocki_node_100",
@@ -169,7 +169,7 @@ def main():
                                         eps,
                                         eps])
  
-            for sample in np.nditer(shiva_1000_triangle[eps]):
+            for sample in np.nditer(blocki_1000_triangle[eps]):
                 result_writer.writerow([time.time(),
                                         "node_privacy",
                                         "blocki_node_1000",
