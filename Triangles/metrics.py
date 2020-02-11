@@ -123,46 +123,48 @@ def main():
                                             jaccard(true_k_core[(net_name, k)], color_k_core)
                     ])
 
-                    blocki_edge_100_k_core = nx_core.k_core(blocki_edge.blocki_edge_trim(net,
-                                                                                     100), k)
-                    result_writer.writerow([time.time(),
-                                            "edge_privacy",
-                                            "blocki_edge_100",
-                                            "k_core",
-                                            net_name,
-                                            epsilon,
-                                            delta,
-                                            k,
-                                            jaccard(true_k_core[(net_name, k)], blocki_edge_100_k_core)
-                    ])
-
-                    blocki_edge_1000_k_core = nx_core.k_core(blocki_edge.blocki_edge_trim(net,
-                                                                                     1000), k)
-                    result_writer.writerow([time.time(),
-                                            "edge_privacy",
-                                            "blocki_edge_1000",
-                                            "k_core",
-                                            net_name,
-                                            epsilon,
-                                            delta,
-                                            k,
-                                            jaccard(true_k_core[(net_name, k)], blocki_edge_1000_k_core)
-                    ])
-
-                    ding_26_k_core = nx_core.k_core(ding.ding_trim(net,
-                                                                   26), k)
-                    result_writer.writerow([time.time(),
-                                            "edge_privacy",
-                                            "ding_26",
-                                            "k_core",
-                                            net_name,
-                                            epsilon,
-                                            delta,
-                                            k,
-                                            jaccard(true_k_core[(net_name, k)], ding_26_k_core)
-                    ])
-
                     csvfile.flush()
+
+                blocki_edge_100_k_core = nx_core.k_core(blocki_edge.blocki_edge_trim(net,
+                                                                                 100), k)
+                result_writer.writerow([time.time(),
+                                        "edge_privacy",
+                                        "blocki_edge_100",
+                                        "k_core",
+                                        net_name,
+                                        epsilon,
+                                        delta,
+                                        k,
+                                        jaccard(true_k_core[(net_name, k)], blocki_edge_100_k_core)
+                ])
+
+                blocki_edge_1000_k_core = nx_core.k_core(blocki_edge.blocki_edge_trim(net,
+                                                                                 1000), k)
+                result_writer.writerow([time.time(),
+                                        "edge_privacy",
+                                        "blocki_edge_1000",
+                                        "k_core",
+                                        net_name,
+                                        epsilon,
+                                        delta,
+                                        k,
+                                        jaccard(true_k_core[(net_name, k)], blocki_edge_1000_k_core)
+                ])
+
+                ding_26_k_core = nx_core.k_core(ding.ding_trim(net,
+                                                               26), k)
+                result_writer.writerow([time.time(),
+                                        "edge_privacy",
+                                        "ding_26",
+                                        "k_core",
+                                        net_name,
+                                        epsilon,
+                                        delta,
+                                        k,
+                                        jaccard(true_k_core[(net_name, k)], ding_26_k_core)
+                ])
+
+                csvfile.flush()
 
 
 if __name__ == "__main__":
