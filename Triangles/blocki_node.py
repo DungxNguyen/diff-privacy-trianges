@@ -72,7 +72,7 @@ def blocki_node_triange_count(net0, epsilon, k, reps):
     lpm.Params.LogToConsole = 0
     lpm.Params.Threads = 32
 
-    print("Prepare to add vars")
+    print("Prepare to add vars", num_nodes, num_edges)
     w = lpm.addVars(2 * num_edges, name="w")
     x = lpm.addVars(num_nodes, name="x")
     print("Finish to add vars")
