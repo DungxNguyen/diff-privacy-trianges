@@ -77,6 +77,8 @@ def blocki_node_triange_count(net, epsilon, k, reps):
     x = lpm.addVars(num_nodes, name="x")
     print("Finish to add vars")
 
+    print("x", x[5241])
+
     w_map = {}
     count = 0
     for (u, v) in net.edges():
