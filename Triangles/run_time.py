@@ -97,7 +97,7 @@ def main():
                 ])
 
                 start = timeit.default_timer()
-                basic_edge.private_basic_edge_triangle_count(net, epsilon, delta)
+                basic_edge.private_basic_edge_triange_count(net, epsilon, delta)
                 end = timeit.default_timer()
                 runtime = end - start
 
