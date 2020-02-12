@@ -33,7 +33,7 @@ network_name = ["ca-GrQc", #5000
                 "loc-gowalla_edges", #200000
                 ]
 
-result_file = "k_core_metrics.csv"
+result_file = "k_core_scale.csv"
 
 
 def jaccard(G, H):
@@ -79,11 +79,12 @@ def main():
 
             net.remove_edges_from(nx.selfloop_edges(net))
             for k in [16, 8, 4]:
-                for epsilon in [1, 0.5, 0.1, 0.05, 0.01, 0.005, 0.001]:
+                for epsilon in [0.5, 0.1, 0.05]:
                     delta = epsilon
                     basic_node_k_core = nx_core.k_core(basic_node.private_basic_node_sample(net,
                                                                                               epsilon,
-                                                                                              delta), k)
+                                                                                              delta),
+                                                       k * min(1 - math.exp(-epsilon), delta, 1.0) ** 2)
                     result_writer.writerow([time.time(),
                                             "node_privacy",
                                             "basic_node",
@@ -97,7 +98,8 @@ def main():
 
                     basic_edge_k_core = nx_core.k_core(basic_edge.private_basic_edge_sample(net,
                                                                                                     epsilon,
-                                                                                                    delta), k)
+                                                                                                    delta),
+                                                       k * min(1 - math.exp(-epsilon), delta, 1.0))
                     result_writer.writerow([time.time(),
                                             "edge_privacy",
                                             "basic_edge",
@@ -111,7 +113,8 @@ def main():
 
                     color_k_core = nx_core.k_core(color.private_color_sample(net,
                                                                                      epsilon,
-                                                                                     delta), k)
+                                                                                     delta),
+                                                  k * min(1.0, delta))
                     result_writer.writerow([time.time(),
                                             "edge_privacy",
                                             "color",
@@ -127,42 +130,45 @@ def main():
 
                 blocki_edge_100_k_core = nx_core.k_core(blocki_edge.blocki_edge_trim(net,
                                                                                  100), k)
-                result_writer.writerow([time.time(),
-                                        "edge_privacy",
-                                        "blocki_edge_100",
-                                        "k_core",
-                                        net_name,
-                                        0.5,
-                                        0.5,
-                                        k,
-                                        jaccard(true_k_core[(net_name, k)], blocki_edge_100_k_core)
-                ])
+                for epsilon in [0.5, 0.1, 0.05]:
+                    result_writer.writerow([time.time(),
+                                            "edge_privacy",
+                                            "blocki_edge_100",
+                                            "k_core",
+                                            net_name,
+                                            epsilon,
+                                            epsilon,    
+                                            k,
+                                            jaccard(true_k_core[(net_name, k)], blocki_edge_100_k_core)
+                    ])
 
                 blocki_edge_1000_k_core = nx_core.k_core(blocki_edge.blocki_edge_trim(net,
                                                                                  1000), k)
-                result_writer.writerow([time.time(),
-                                        "edge_privacy",
-                                        "blocki_edge_1000",
-                                        "k_core",
-                                        net_name,
-                                        0.5,
-                                        0.5,
-                                        k,
-                                        jaccard(true_k_core[(net_name, k)], blocki_edge_1000_k_core)
-                ])
+                for epsilon in [0.5, 0.1, 0.05]:
+                    result_writer.writerow([time.time(),
+                                            "edge_privacy",
+                                            "blocki_edge_1000",
+                                            "k_core",
+                                            net_name,
+                                            epsilon,
+                                            epsilon,    
+                                            k,
+                                            jaccard(true_k_core[(net_name, k)], blocki_edge_1000_k_core)
+                    ])
 
                 ding_26_k_core = nx_core.k_core(ding.ding_trim(net,
                                                                26), k)
-                result_writer.writerow([time.time(),
-                                        "edge_privacy",
-                                        "ding_26",
-                                        "k_core",
-                                        net_name,
-                                        0.5,
-                                        0.5,
-                                        k,
-                                        jaccard(true_k_core[(net_name, k)], ding_26_k_core)
-                ])
+                for epsilon in [0.5, 0.1, 0.05]:
+                    result_writer.writerow([time.time(),
+                                            "edge_privacy",
+                                            "ding_26",
+                                            "k_core",
+                                            net_name,
+                                            epsilon,
+                                            epsilon,    
+                                            k,
+                                            jaccard(true_k_core[(net_name, k)], ding_26_k_core)
+                    ])
 
                 csvfile.flush()
 
