@@ -56,7 +56,7 @@ def main():
                                create_using=nx.Graph(),
                                nodetype=int)
         net.remove_edges_from(nx.selfloop_edges(net))
-        for k in [16, 8, 4]:
+        for k in [512, 256, 128, 64, 32, 16, 8, 4]:
             true_k_core[(net_name, k)] = nx_core.k_core(net, k)
             # result_writer.writerow([time.time(),
             #                         "node_privacy",
@@ -78,7 +78,7 @@ def main():
                                    nodetype=int)
 
             net.remove_edges_from(nx.selfloop_edges(net))
-            for k in [16, 8, 4]:
+            for k in [512, 256, 128, 64, 32, 16, 8, 4]:
                 for epsilon in [0.5, 0.1, 0.05]:
                     delta = epsilon
                     basic_node_k_core = nx_core.k_core(basic_node.private_basic_node_sample(net,
@@ -157,11 +157,11 @@ def main():
                     ])
 
                 ding_26_k_core = nx_core.k_core(ding.ding_trim(net,
-                                                               26), k)
+                                                               100), k)
                 for epsilon in [0.5, 0.1, 0.05]:
                     result_writer.writerow([time.time(),
                                             "edge_privacy",
-                                            "ding_26",
+                                            "ding_100",
                                             "k_core",
                                             net_name,
                                             epsilon,
