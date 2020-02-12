@@ -40,6 +40,9 @@ def jaccard(G, H):
     G_nodes = list(G.nodes())
     H_nodes = list(H.nodes())
 
+    if len(G_nodes) == 0 or len(H_nodes) == 0:
+        return 0
+
     intersection = len(set(G_nodes) & set(H_nodes))
 
     return intersection / (len(G_nodes) + len(H_nodes) - intersection)
