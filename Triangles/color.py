@@ -13,7 +13,8 @@ from concurrent.futures import ProcessPoolExecutor
 
 
 def color_sample(net, p):
-    sampled_net = nx.Graph()
+    sampled_net = nx.create_empty_copy(net)
+    #sampled_net = nx.Graph()
 
     for node in net.nodes():
         net.nodes[node]['color'] = random.randint(1, math.ceil(1/p))

@@ -16,7 +16,8 @@ def basic_edge_sample(net, p):
     if (p <= 0 and p > 1):
         return net  # Should raise exception
 
-    sampled_net = nx.Graph()
+    sampled_net = nx.create_empty_copy(net)
+    #sampled_net = nx.Graph()
 
     for (u, v) in net.edges():
         if random.random() <= p:
