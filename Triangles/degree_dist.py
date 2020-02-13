@@ -40,6 +40,7 @@ def compute_degree_distribution(net, limit=200):
 
     dist = np.zeros(limit + 1)
 
+    print(degreeCountList)
     for deg, count in degreeCountList:
         if deg <= limit:
             dist[deg] = count
