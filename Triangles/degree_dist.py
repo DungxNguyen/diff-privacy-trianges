@@ -69,7 +69,7 @@ def main():
                                         "origin",
                                         net_name,
                                         i,
-                                        original_dist[i]
+                                        original_dist[i],
                                         epsilon,
                                         delta])
 
@@ -94,22 +94,17 @@ def main():
                                         "edge_privacy",
                                         "basic_edge",
                                         net_name,
-                                        edge_sampled_net.number_of_edges(),
-                                        edge_sampled_net.number_of_edges() / min(1 - math.exp(-epsilon), delta, 1.0),
-                                        origin_edge_count,
+                                        i,
+                                        average_edge_dist[i],
                                         epsilon,
                                         delta])
-
-
-
 
                 result_writer.writerow([time.time(),
                                         "edge_privacy",
                                         "color",
                                         net_name,
-                                        color_sampled_net.number_of_edges(),
-                                        color_sampled_net.number_of_edges() / min(1.0, delta),
-                                        origin_edge_count,
+                                        i,
+                                        average_color_dist[i],
                                         epsilon,
                                         delta])
 
