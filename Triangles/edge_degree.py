@@ -45,6 +45,15 @@ def main():
 
         for epsilon in [0.001, 0.005, 0.01, 0.05, 0.1, 0.5, 1]:
             delta = epsilon
+            result_writer.writerow([time.time(),
+                                    "edge_privacy",
+                                    "origin",
+                                    net_name,
+                                    origin_edge_count,
+                                    origin_edge_count,
+                                    epsilon,
+                                    delta])
+
             for _ in range(int(sys.argv[1])):
                 edge_sampled_net = basic_edge.private_basic_edge_sample(net,
                                                                         epsilon,
