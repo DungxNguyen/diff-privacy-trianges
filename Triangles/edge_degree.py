@@ -51,6 +51,7 @@ def main():
                                     net_name,
                                     origin_edge_count,
                                     origin_edge_count,
+                                    origin_edge_count,
                                     epsilon,
                                     delta])
 
@@ -63,6 +64,7 @@ def main():
                                         "basic_edge",
                                         net_name,
                                         edge_sampled_net.number_of_edges(),
+                                        edge_sampled_net.number_of_edges() / min(1 - math.exp(-epsilon), delta, 1.0),
                                         origin_edge_count,
                                         epsilon,
                                         delta])
@@ -76,6 +78,7 @@ def main():
                                         "color",
                                         net_name,
                                         color_sampled_net.number_of_edges(),
+                                        color_sampled_net.number_of_edges() / min(1.0, delta),
                                         origin_edge_count,
                                         epsilon,
                                         delta])
