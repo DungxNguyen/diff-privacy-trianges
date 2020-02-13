@@ -35,11 +35,12 @@ LIMIT = 200
 
 def compute_degree_distribution(net, limit=200):
     degree_sequence = sorted([d for n, d in net.degree()], reverse=True)  # degree sequence
-    degreeCount = zip(*(collections.Counter(degree_sequence)).items())
+    degreeCount = collections.Counter(degree_sequence)
+    degreeCountList = zip(*degreeCount.items())
 
     dist = np.zeros(limit + 1)
 
-    for deg, count in degreeCount:
+    for deg, count in degreeCountList:
         if deg <= limit:
             dist[deg] = count
 
