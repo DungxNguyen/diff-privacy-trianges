@@ -83,6 +83,8 @@ def main():
                                         epsilon,
                                         delta])
 
+                csvfile.flush()
+
 
 if __name__ == "__main__":
     main()
