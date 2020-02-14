@@ -34,17 +34,18 @@ LIMIT = 200
 
 
 def compute_degree_distribution(net, limit=200):
-    degree_sequence = sorted([d for n, d in net.degree()], reverse=True)  # degree sequence
+    degree_sequence = sorted([d for n, d in net.degree()], reverse=False)  # degree sequence
     degreeCount = collections.Counter(degree_sequence)
-    degreeCountList = zip(*degreeCount.items())
 
     dist = np.zeros(limit + 1)
 
-    print(degreeCountList)
-    for deg, count in degreeCountList:
+    for deg, count in degreeCount.items():
+        # print("deg:", deg)
+        # print("count:", count)
         if deg <= limit:
             dist[deg] = count
 
+    dist /= net.number_of_nodes()
     return dist
 
 
@@ -75,8 +76,8 @@ def main():
                                         epsilon,
                                         delta])
 
-            edge_sampled_dists = [] * int(sys.argv[1])
-            color_sampled_dists = [] * int(sys.argv[1])
+            edge_sampled_dists = [None] * int(sys.argv[1])
+            color_sampled_dists = [None] * int(sys.argv[1])
             for i in range(int(sys.argv[1])):
                 edge_sampled_dists[i] = compute_degree_distribution(basic_edge.private_basic_edge_sample(net,
                                                                                                          epsilon,
@@ -88,8 +89,8 @@ def main():
                                                                                                 delta),
                                                                      limit=LIMIT)
 
-            average_edge_dist = np.mean(np.array(edge_sampled_dists), axis=0) / min(1 - math.exp(-epsilon), delta, 1.0)
-            average_color_dist = np.mean(np.array(color_sampled_dists), axis=0) / min(1.0, delta)
+            average_edge_dist = np.mean(np.array(edge_sampled_dists), axis=0)  # / min(1 - math.exp(-epsilon), delta, 1.0)
+            average_color_dist = np.mean(np.array(color_sampled_dists), axis=0)  # / min(1.0, delta)
 
             for i in range(LIMIT + 1):
                 result_writer.writerow([time.time(),
@@ -110,7 +111,7 @@ def main():
                                         epsilon,
                                         delta])
 
-                csvfile.flush()
+            csvfile.flush()
 
 
 if __name__ == "__main__":
